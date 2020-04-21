@@ -2,24 +2,6 @@ import socket, threading
 
 
 class ClientThread(threading.Thread):
-    def __init__(self,clientAddress,clientsocket):
-        threading.Thread.__init__(self)
-        self.csocket = clientsocket
-        self.cAddress = clientAddress
-        print ("New connection added: ", clientAddress)
-    def run(self):
-        print ("Connection from : ", self.cAddress)
-        msg = ''
-        while True:
-            data = self.csocket.recv(2048)
-            msg = data.decode()
-            if msg=='bye':
-              break
-            print ("from client", msg)
-import socket, threading
-
-
-class ClientThread(threading.Thread):
     
         import socket, threading
 
@@ -55,4 +37,34 @@ class ClientThread(threading.Thread):
             msg = data.decode()
             if msg=='bye':
               break
+            print ("from client", msg)import socket, threading
+
+
+class ClientThread(threading.Thread):
+    def __init__(self,clientAddress,clientsocket):
+        threading.Thread.__init__(self)
+        self.csocket = clientsocket
+        self.cAddress = clientAddress
+        print ("New connection added: ", clientAddress)
+    def run(self):
+        print ("Connection from : ", self.cAddress)
+        msg = ''
+        while True:
+            data = self.csocket.recv(2048)
+            msg = data.decode()
+            if msg=='bye':
+              break
             print ("from client", msg)
+import socket, threading
+
+
+class ClientThread(threading.Thread):
+    
+        import socket, threading
+
+
+class ClientThread(threading.Thread):
+    def __init__(self,clientAddress,clientsocket):
+        threading.Thread.__init__(self)
+        self.csocket = clientsocket
+        self.cAddress = clientAddress
