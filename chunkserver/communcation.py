@@ -83,10 +83,12 @@ class masterthread():
 			client.send(bytes[num])
 			client.recv(60)
 			client.sendall((str(self.dirty_chunks)).encode())
+			client.close()
 			self.dirty = False
 			self.dirty_chunks = []
 
 	def copyfromchunkserver(self,client,copylist):
+		client.close()
 		print("copy from chunk server given")
 		copylist = copylist[1:-1].split(',')
 		for item in copylist:
@@ -113,6 +115,7 @@ class masterthread():
 		with open(chunk, 'rb') as f:
 			data=f.read(MAX_CHUNK_SIZE)
 			client.send(data)
+		client.close()
 		print("chunk sent")
 
 	def appendchunk(self,recv,client_con):
@@ -150,9 +153,10 @@ class masterthread():
 					data2=client.recv(sizetoappend-recvsize)
 					f1.write(data2)
 					data+=data2	
+
 				self.dirty = True	
 				self.dirty_chunks.append(file+"_"+str(chunknum+1))
-
+			client.close()
 			if to_recv[0]=="client":
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
 
