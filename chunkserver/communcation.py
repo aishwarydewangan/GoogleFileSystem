@@ -182,13 +182,14 @@ class chunkserver():
 		for item in getlist:
 			item = item.split(":")
 			serverip, serverport = item[0],item[1]
-			s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-			tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
-			s1.connect((serverip,serverport))
-			s1.sendall(tosend.encode())
-			st = s1.recv(1024)
-			s1.sendall(data.encode())
-			s1.close()
+			if serverport!=self.port:
+				s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+				tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
+				s1.connect((serverip,serverport))
+				s1.sendall(tosend.encode())
+				st = s1.recv(1024)
+				s1.sendall(data.encode())
+				s1.close()
 
 master = chunkserver()	
 master.run()

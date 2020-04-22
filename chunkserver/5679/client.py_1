@@ -1,0 +1,33 @@
+import socket,sys
+
+def getfilename(name):
+	name = name.split('_')
+	return name[0]
+
+# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# server.connect(("127.0.0.1",8080))
+dic= {}
+dic["file1"]=["cs1","cs3"]
+dic["file2"]=["cs4"]
+dic["file3"]=["cs2","cs1"]
+ack ="ack"
+# print("size : ",sys.getsizeof(ack))
+# server.send(str(dic).encode())
+name = "klas_23"
+print(getfilename(name))
+# chunk = "./5679/communcation_with_client.py"
+# with open(chunk, 'rb') as f:
+# 	data=f.read(2048)
+# 	server.send(data)
+# chunk = "/home/shivangi/Forthsem/DS/GoogleFileSystem/chunkserver/5679/data3"
+# with open(chunk,'ab') as f1:
+# 	data2=server.recv(2048)
+# 	f1.write(data2)
+# server.sendall(bytes("bye",'UTF-8'))
+# server.close()
+
+# c= "ajwdh/ejd/eif"
+# ind = c.rfind("/")
+# c=c[ind+1:]
+# print(c)
