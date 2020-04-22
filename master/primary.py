@@ -306,7 +306,7 @@ class HeartbeatThread(threading.Thread):
         del chunkservers[cs]
 
         # Send this list to one of the chunkservers
-        cs_list = chunkservers.values()
+        cs_list = list(chunkservers.values())
 
         cs_list.sort(key=operator.attrgetter('load'))
 
@@ -324,8 +324,9 @@ class HeartbeatThread(threading.Thread):
         global chunkservers
         global files
 
-        for cs in chunkservers.keys():
+        for cs in list(chunkservers):
             if chunkservers[cs].getStatus():
+                print("Checking: ", cs)
                 ip = cs[0]
                 port = cs[1]
                 heartbeat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -356,9 +357,10 @@ class HeartbeatThread(threading.Thread):
                             fileObj.updateChunkInfo(chunkName, cs)
                 heartbeat.close()
                 if check:
+                    print(cs, " is down, running server down op")
                     self.chunkServerDown(cs)
         print("HeartbeatThread Completed")
-        threading.Timer(10, self.run).start()
+        threading.Timer(20, self.run).start()
 
 class RegisterChunkServerThread(threading.Thread):
 
