@@ -69,8 +69,7 @@ class FileInfo:
 
         chunkInfo[chunk].pop(i)
 
-
-class ChunkServers:
+class ChunkServer:
 
     def __init__(self, ip, port, status):
         self.ip = ip
@@ -422,5 +421,5 @@ if __name__ == '__main__':
         words = msg.split(':')
         if words[0] == 'info':
             InfoThread(address, sock, words[1]).start()
-        else:
+        elif words[0] == 'client':
             ClientThread(address, sock, words[1:]).start()
