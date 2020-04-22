@@ -10,7 +10,6 @@ MAX_CHUNK_SIZE = 2048
 
 class chunkserver():
 	dirty = False
-	dirty_chunks = []
 	mutual_excl = {}
 	def __init__(self):
 		self.myport = int(sys.argv[1])
@@ -26,13 +25,20 @@ class chunkserver():
 		self.path = "./"+str(self.myport)
 		if os.path.exists(self.path):
 			chunks = os.listdir(self.path)
-			chunks = str(chunks)
 		else:
 			os.mkdir(self.path)
-			chunks = ""
+			chunks = []
+		msgtosend = ""
+		for file in chunks:
+			filename = self.path+"/"+file
+			file_stats = os.stat(filename)
+			currsize = file_stats.st_size
+			msgtosend+=file+":"+str(currsize)+","
+		if len(chunks)!=0:
+			msgtosend=msgtosend[:-1]
 		client.sendall("register".encode())
 		client.recv(60)
-		client.sendall(chunks.encode())
+		client.sendall(msgtosend.encode())
 		client.close()
 
 	def run(self):
@@ -47,7 +53,6 @@ class chunkserver():
 			threading.Thread(target = self.checkoperation,args = (client,address)).start()
 
 	def checkoperation(self,client,address):
-		print("check operation: ")
 		recv=client.recv(400).decode("utf-8")
 		to_recv=recv.split(":")
 		if(to_recv[0]=="master"):
@@ -81,24 +86,29 @@ class chunkserver():
 		if(self.dirty == False):
 			client.sendall(bytes([0]))
 		else:
-			nums = str(sys.getsizeof(self.dirty_chunks))
-			# print(type(nums))
+			chunks = os.listdir(self.path)
+			msgtosend = ""
+			for file in chunks:
+				filename = self.path+"/"+file
+				file_stats = os.stat(filename)
+				currsize = file_stats.st_size
+				msgtosend+=file+":"+str(currsize)+","
+			if len(chunks)!=0:
+				msgtosend=msgtosend[:-1]
+			nums = str(sys.getsizeof(msgtosend))
 			client.sendall(nums.encode())
 			client.recv(60)
-			client.sendall((str(self.dirty_chunks)).encode())
+			client.sendall(msgtosend.encode())
 			self.dirty = False
-			self.dirty_chunks = []
 		client.close()
 
 	def copyfromchunkserver(self,copylist):
-		# client.close()
 		print("copy from chunkserver")
-		copylist = copylist[1:-1].split(',')
+		copylist = copylist.split(',')
 		for item in copylist:
-			item = item[1:-1].split('=')
+			item = item.split('=')
 			chunkname = item[1]
 			self.dirty = True
-			self.dirty_chunks.append(chunkname)
 			item = item[0].split(":")
 			serverip, serverport  = item[0],item[1]
 			tosend = "chunkserver:sendcopy:"+chunkname
@@ -131,42 +141,12 @@ class chunkserver():
 			to_recv,client = conn[0],conn[1]
 			chunk=self.path+"/"+to_recv[2]
 			sizetoappend=int(to_recv[3])
-			file_stats = os.stat(chunk)
-			currsize = file_stats.st_size
-			recvsize = MAX_CHUNK_SIZE - currsize
-			ind = chunk.rfind('/')
-			file = chunk[ind+1:]
-			filechunk = file.split('_')
-			file = filechunk[0]
-			chunknum = int(filechunk[1])
 			client.sendall("ok".encode())
-			print("curr size ", currsize)
-			print("recv size", recvsize)
-			if recvsize >= sizetoappend:
-				self.dirty = True	
-				self.dirty_chunks.append(to_recv[2])
-				with open(chunk,'ab') as f1:
-					data = client.recv(sizetoappend)
-					f1.write(data)
-				
-			else:
-				
-				self.dirty = True	
-				self.dirty_chunks.append(to_recv[2])
-
-				chunk2 = self.path+"/"+file+"_"+str(chunknum+1)
-
-				self.dirty_chunks.append(file+"_"+str(chunknum+1))
-				with open(chunk,'ab') as f1:
-					data = client.recv(recvsize)
-					f1.write(data)
-				
-				with open(chunk2, 'ab') as f1:
-					data2=client.recv(sizetoappend-recvsize)
-					f1.write(data2)
-					data+=data2	
-				
-
+			self.dirty = True	
+			with open(chunk,'ab') as f1:
+				data = client.recv(sizetoappend)
+				f1.write(data)
+			client.close()
 			if to_recv[0]=="client":
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
 
@@ -185,7 +165,7 @@ class chunkserver():
 				sys.exit()
 		s1.sendall(("info:"+file).encode())
 		getlist = s1.recv(MAX_CHUNK_SIZE).decode()
-		getlist = getlist[1:-1].split(',')
+		getlist = getlist.split(',')
 		s1.close()
 		for item in getlist:
 			serverip, serverport = item[0],item[1]
