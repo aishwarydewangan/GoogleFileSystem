@@ -186,7 +186,7 @@ class chunkserver():
 			if len(item)>0:
 				item = item.split(":")
 				serverip, serverport = item[0],item[1]
-				if serverport!=self.port:
+				if serverport!=self.myport:
 					s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 					tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
 					s1.connect((serverip,serverport))
