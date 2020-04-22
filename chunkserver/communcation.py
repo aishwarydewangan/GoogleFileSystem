@@ -181,19 +181,23 @@ class chunkserver():
 		getlist = getlist.split(',')
 		s1.close()
 		print(getlist)
+		i = 0
 		for item in getlist:
 			print(item)
 			if len(item)>0:
 				item = item.split(":")
 				serverip, serverport = item[0],item[1]
-				if serverport!=self.myport:
+				if int(serverport)!=self.myport:
+					i=i+1
 					s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 					tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
-					s1.connect((serverip,serverport))
+					s1.connect((serverip,int(serverport)))
 					s1.sendall(tosend.encode())
 					st = s1.recv(1024)
-					s1.sendall(data.encode())
+					s1.sendall(data)
 					s1.close()
+					if i>=2:
+						break
 		print("copied to secondary replicas")
 
 master = chunkserver()	
