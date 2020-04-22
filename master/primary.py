@@ -348,8 +348,8 @@ class RegisterChunkServerThread(threading.Thread):
         data = self.csocket.recv(20000)
         if data:
             data = data.decode().split(',')
-            ip = caddress[0]
-            port = caddress[1]
+            ip = self.caddress[0]
+            port = self.caddress[1]
 
             obj = ChunkServer(ip, port, True)
 
@@ -357,7 +357,7 @@ class RegisterChunkServerThread(threading.Thread):
                 chunk_info = d.split(':')
                 obj.addChunk(chunk_info[0], int(chunk_info[1]))
 
-            chunkservers[caddress] = obj
+            chunkservers[self.caddress] = obj
 
             for d in data:
                 chunk_info = d.split(':')
@@ -368,7 +368,7 @@ class RegisterChunkServerThread(threading.Thread):
 
                 fileObj = files[fileName]
 
-                fileObj.updateChunkInfo(chunkName, caddress)
+                fileObj.updateChunkInfo(chunkName, self.caddress)
 
 
             print("ChunkServer ", self.caddress, " registered...")
