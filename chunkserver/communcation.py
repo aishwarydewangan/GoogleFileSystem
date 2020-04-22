@@ -72,13 +72,13 @@ class chunkserver():
 			elif to_recv[1]=="append":
 				if to_recv[2] in (self.mutual_excl).keys():
 					mutual = [to_recv,client]
-					self.mutual_excl[recv[2]].append(mutual)
+					self.mutual_excl[to_recv[2]].append(mutual)
 				else:
 					self.appendchunk(to_recv,client)
 			elif to_recv[1]=="write":
 				if len(self.mutual_excl[to_recv[2]])!=0:
 					mutual = [to_recv,client]
-					self.mutual_excl[recv[2]].append(mutual)
+					self.mutual_excl[to_recv[2]].append(mutual)
 				else:
 					self.appendchunk(to_recv,client)
 		elif(to_recv[0]=="chunkserver"):
