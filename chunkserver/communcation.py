@@ -58,6 +58,7 @@ class chunkserver():
 
 	def checkoperation(self,client,address):
 		recv=client.recv(400).decode("utf-8")
+		print("msg recieved: ",recv)
 		to_recv=recv.split(":")
 		if(to_recv[0]=="master"):
 			if(to_recv[1]=="heartbeat"):
