@@ -36,7 +36,7 @@ class FileInfo:
 
     def updateChunkInfo(self, chunk, cs):
         global chunkservers
-        if chunk not in chunkInfo.keys():
+        if chunk not in self.chunkInfo.keys():
             self.chunkInfo[chunk] = []
         self.chunkInfo[chunk].append(chunkservers[cs])
 
@@ -427,6 +427,16 @@ class InfoThread(threading.Thread):
         fileObj = files[fileName]
 
         chunk_server_info = fileObj.getChunkInfo(self.cname)
+
+        cs_list = list(chunkservers.values())
+
+        cs_list.sort(key=operator.attrgetter('load'))
+
+        i = 0
+
+        while len(chunk_server_info) < 3 and i < len(cs_list):
+            chunk_server_info.append(cs_list[i])
+            i += 1
 
         msg = ''
 
