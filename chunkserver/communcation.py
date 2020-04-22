@@ -70,7 +70,7 @@ class chunkserver():
 			if to_recv[1]=="read":
 				self.sendchunk(to_recv,client,address)
 			elif to_recv[1]=="append":
-				if len(self.mutual_excl[to_recv[2]])!=0:
+				if to_recv[2] in (self.mutual_excl).keys():
 					mutual = [to_recv,client]
 					self.mutual_excl[recv[2]].append(mutual)
 				else:
