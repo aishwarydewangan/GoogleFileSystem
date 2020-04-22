@@ -27,7 +27,7 @@ class FileInfo:
 
     def updateLastChunkStatus(self):
         self.hasLastChunk = (self.totalSize%MAXSIZE != 0)
-        self.lastChunkID = math.ceil(self.totalSize/MAXSIZE)
+        self.lastChunkID = self.name + "_" + str(math.ceil(self.totalSize/MAXSIZE))
 
     def updateFileSize(self, size):
         self.totalSize += size
@@ -182,7 +182,7 @@ class ClientThread(threading.Thread):
             if i==obj.getTotalChunks()-1:
                 writeSize = size%MAXSIZE
 
-            msg += str(ip) + ":" + str(port) + "=" + str(writeSize) + ","
+            msg += str(ip) + ":" + str(port) + "=" + name + "_" + str(i+1) + ":" + str(writeSize) + ","
             i += 1
             j += 1
 
@@ -214,16 +214,18 @@ class ClientThread(threading.Thread):
             port = chunkServerList[1].getPort()
 
             if newSize <= to_add:
-                msg = str(ip) + ":" + str(port) + "=" + str(newSize)
+                msg = str(ip) + ":" + str(port) + "=" + obj.getLastChunkID() + ":" + str(newSize)
                 obj.updateFileSize(size)
                 return msg
             else:
-                msg = str(ip) + ":" + str(port) + "=" + str(to_add) + ","
+                msg = str(ip) + ":" + str(port) + "=" + obj.getLastChunkID() + ":" + str(newSize) + ","
                 newSize -= to_add
 
         i = 0
 
         j = 0
+
+        lastChunkNumber = int(obj.getLastChunkID().split('_')[1])+1
 
         total_chunks = math.ceil(newSize/MAXSIZE)
 
@@ -239,9 +241,10 @@ class ClientThread(threading.Thread):
             if i==total_chunks-1:
                 writeSize = size%MAXSIZE
 
-            msg += str(ip) + ":" + str(port) + "=" + str(writeSize) + ","
+            msg += str(ip) + ":" + str(port) + "=" + name + "_" + str(lastChunkNumber) + ":" + + str(writeSize) + ","
             i += 1
             j += 1
+            lastChunkNumber += 1
 
         msg = msg[:-1]
 
