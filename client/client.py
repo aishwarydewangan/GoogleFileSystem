@@ -75,7 +75,11 @@ def send_to_chunk_server(decision,chunkInfo,filename):
             s.connect((socket.gethostbyname(ip),port))
             chunk_server_msg = "client:" + "append:" + filename_chunkid + ":" + writeSize
             s.send(chunk_server_msg.encode('ascii'))
-            status = s.recv(2048)
+            status = s.recv(100)
+            chunk = "./"+filename 
+            with open(chunk, 'rb') as f:
+                data=f.read(int(writeSize))
+                s.sendall(data)
             if not status:
                 print("Unsuccessful Write")
                 return
