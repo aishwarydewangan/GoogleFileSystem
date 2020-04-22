@@ -258,7 +258,7 @@ class ClientThread(threading.Thread):
             if i==total_chunks-1:
                 writeSize = size%MAXSIZE
 
-            msg += str(ip) + ":" + str(port) + "=" + name + "_" + str(lastChunkNumber) + ":" + + str(writeSize) + ","
+            msg += str(ip) + ":" + str(port) + "=" + name + "_" + str(lastChunkNumber) + ":" + str(writeSize) + ","
             i += 1
             j += 1
             lastChunkNumber += 1
