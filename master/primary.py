@@ -1,10 +1,12 @@
 import math
 import socket
+import pickle
 import operator
 import threading
 
 HOST = "127.0.0.1"
-PORT = 8080
+PRIMARY_PORT = 8080
+SECONDARY_PORT = 8081
 
 MAXSIZE = 2048
 
@@ -14,6 +16,23 @@ files = {}
 def getFileName(name):
     name = name.split('_')
     return name[0]
+
+def writeMetaData():
+    with open('chunkservers.meta', 'wb') as output:
+        pickle.dump(chunkservers, output, pickle.HIGHEST_PROTOCOL)
+
+    with open('files.meta', 'wb') as output:
+        pickle.dump(files, output, pickle.HIGHEST_PROTOCOL)
+
+def readMetaData():
+    global chunkservers
+    global files
+
+    with open('chunkservers.meta', 'rb') as ip:
+        chunkservers = pickle.load(ip)
+
+    with open('files.meta', 'rb') as ip:
+        files = pickle.load(ip)
 
 class FileInfo:
 
@@ -136,6 +155,8 @@ class ClientThread(threading.Thread):
             msg = self.appendFile(self.info[1], int(self.info[2]))
 
         self.csocket.sendall(bytes(msg, 'UTF-8'))
+
+        self.csocket.close()
 
         print("Response sent to Client " , self.caddress , ": " , msg)
 
@@ -361,6 +382,7 @@ class HeartbeatThread(threading.Thread):
                     self.chunkServerDown(cs)
         print("HeartbeatThread Completed")
         threading.Timer(20, self.run).start()
+        writeMetaData()
 
 class RegisterChunkServerThread(threading.Thread):
 
@@ -405,6 +427,8 @@ class RegisterChunkServerThread(threading.Thread):
             port = self.caddress[1]
             obj = ChunkServer(ip, port, True)
             chunkservers[self.caddress] = obj
+
+        self.csocket.close()
 
         print("ChunkServer ", self.caddress, " registered...")
 
@@ -452,7 +476,7 @@ class InfoThread(threading.Thread):
 if __name__ == '__main__':
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind((HOST, PORT))
+    server.bind((HOST, PRIMARY_PORT))
 
     print("Primary Server started")
     print("Waiting for requests..")
@@ -465,6 +489,8 @@ if __name__ == '__main__':
         msg = data.decode()
         if msg == 'register':
             RegisterChunkServerThread(address, sock).start()
+        if msg == 'healthcheck':
+            sock.sendall(bytes("ok", 'UTF-8'))
         words = msg.split(':')
         if words[0] == 'info':
             InfoThread(address, sock, words[1]).start()
