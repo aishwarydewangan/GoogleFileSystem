@@ -235,7 +235,7 @@ class ClientThread(threading.Thread):
                 obj.updateFileSize(size)
                 return msg
             else:
-                msg = str(ip) + ":" + str(port) + "=" + obj.getLastChunkID() + ":" + str(newSize) + ","
+                msg = str(ip) + ":" + str(port) + "=" + obj.getLastChunkID() + ":" + str(to_add) + ","
                 newSize -= to_add
 
         i = 0
@@ -256,7 +256,7 @@ class ClientThread(threading.Thread):
             writeSize = MAXSIZE
 
             if i==total_chunks-1:
-                writeSize = size%MAXSIZE
+                writeSize = newSize%MAXSIZE
 
             msg += str(ip) + ":" + str(port) + "=" + name + "_" + str(lastChunkNumber) + ":" + str(writeSize) + ","
             i += 1
@@ -341,7 +341,6 @@ class HeartbeatThread(threading.Thread):
                 if not check:
                     heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
                     data = heartbeat.recv(1024)
-                    print(data.decode())
                     length = int(data.decode())
                     if length > 0:
                         heartbeat.sendall(bytes("ok", 'UTF-8'))
@@ -359,7 +358,7 @@ class HeartbeatThread(threading.Thread):
                 if check:
                     self.chunkServerDown(cs)
         print("HeartbeatThread Completed")
-        threading.Timer(20, self.run).start()
+        threading.Timer(10, self.run).start()
 
 class RegisterChunkServerThread(threading.Thread):
 
