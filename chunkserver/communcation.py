@@ -166,6 +166,7 @@ class chunkserver():
 		print("data appended")
 
 	def sendtosecondary(self,data,sizetoappend,file):
+		print("copying to secondary replicas")
 		try:
 			s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s1.connect((MASTER_IP, MASTER_PORT))
@@ -179,17 +180,21 @@ class chunkserver():
 		getlist = s1.recv(MAX_CHUNK_SIZE).decode()
 		getlist = getlist.split(',')
 		s1.close()
+		print(getlist)
 		for item in getlist:
-			item = item.split(":")
-			serverip, serverport = item[0],item[1]
-			if serverport!=self.port:
-				s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-				tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
-				s1.connect((serverip,serverport))
-				s1.sendall(tosend.encode())
-				st = s1.recv(1024)
-				s1.sendall(data.encode())
-				s1.close()
+			print(item)
+			if len(item)>0:
+				item = item.split(":")
+				serverip, serverport = item[0],item[1]
+				if serverport!=self.port:
+					s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+					tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
+					s1.connect((serverip,serverport))
+					s1.sendall(tosend.encode())
+					st = s1.recv(1024)
+					s1.sendall(data.encode())
+					s1.close()
+		print("copied to secondary replicas")
 
 master = chunkserver()	
 master.run()
