@@ -394,13 +394,12 @@ class InfoThread(threading.Thread):
 
         msg = ''
 
-        for cs in chunk_server_info:
-            msg += cs.getIP() + ":" + cs.getPort() + ','
+        for obj in chunk_server_info:
+            msg += obj.getIP() + ":" + obj.getPort() + ','
 
         msg = msg[:-1]
 
         csocket.sendall(bytes(msg, 'UTF-8'))
-
 
         print("ChunkServer ", self.caddress, " disconnected...")
 
