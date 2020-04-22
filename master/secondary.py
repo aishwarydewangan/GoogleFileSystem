@@ -346,45 +346,69 @@ class HeartbeatThread(threading.Thread):
     def run(self):
         global chunkservers
         global files
+        global primaryStatus
 
-        for cs in list(chunkservers):
-            if chunkservers[cs].getStatus():
-                print("Checking: ", cs)
-                ip = cs[0]
-                port = cs[1]
-                heartbeat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                check = False
+        if primaryStatus:
+            healthcheck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            try:
+                healthcheck.connect((HOST, PRIMARY_PORT))
+            except socket.error:
                 try:
-                    heartbeat.connect((ip, port))
+                    healthcheck.connect((HOST, PRIMARY_PORT))
                 except socket.error:
+                    primaryStatus = False
+
+            if primaryStatus:
+                healthcheck.sendall(bytes("healthcheck", 'UTF-8'))
+                data = healthcheck.recv(2048)
+                if not data:
+                    primaryStatus = False
+            print("Primary Master Status: ", primaryStatus)
+            healthcheck.close()
+
+        if not primaryStatus:
+            readMetaData()
+
+            for cs in list(chunkservers):
+                if chunkservers[cs].getStatus():
+                    print("Checking: ", cs)
+                    ip = cs[0]
+                    port = cs[1]
+                    heartbeat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    check = False
                     try:
                         heartbeat.connect((ip, port))
                     except socket.error:
-                        print("Unable to connect to ChunkServer ", cs)
-                        check = True
-                if not check:
-                    heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
-                    data = heartbeat.recv(1024)
-                    length = int(data.decode())
-                    if length > 0:
-                        heartbeat.sendall(bytes("ok", 'UTF-8'))
-                        data = heartbeat.recv(length+100)
-                        chunkservers[cs].updateChunk(data.decode())
-                        for cl in data.decode().split(','):
-                            chunk_info = cl.split(':')
-                            chunkName = chunk_info[0]
-                            fileName = getFileName(chunkName)
+                        try:
+                            heartbeat.connect((ip, port))
+                        except socket.error:
+                            print("Unable to connect to ChunkServer ", cs)
+                            check = True
+                    if not check:
+                        heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
+                        data = heartbeat.recv(1024)
+                        length = int(data.decode())
+                        if length > 0:
+                            heartbeat.sendall(bytes("ok", 'UTF-8'))
+                            data = heartbeat.recv(length+100)
+                            chunkservers[cs].updateChunk(data.decode())
+                            for cl in data.decode().split(','):
+                                chunk_info = cl.split(':')
+                                chunkName = chunk_info[0]
+                                fileName = getFileName(chunkName)
 
-                            fileObj = files[fileName]
+                                fileObj = files[fileName]
 
-                            fileObj.updateChunkInfo(chunkName, cs)
-                heartbeat.close()
-                if check:
-                    print(cs, " is down, running server down op")
-                    self.chunkServerDown(cs)
-        print("HeartbeatThread Completed")
+                                fileObj.updateChunkInfo(chunkName, cs)
+                    heartbeat.close()
+                    if check:
+                        print(cs, " is down, running server down op")
+                        self.chunkServerDown(cs)
+            print("HeartbeatThread Completed")
+            writeMetaData()
+
         threading.Timer(20, self.run).start()
-        writeMetaData()
 
 class RegisterChunkServerThread(threading.Thread):
 
@@ -474,28 +498,7 @@ class InfoThread(threading.Thread):
         self.csocket.close()
 
         print("ChunkServer ", self.caddress, " disconnected...")
-
-def healthCheckService():
-    global primaryStatus
-
-    if primaryStatus:
-        healthcheck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        try:
-            healthcheck.connect((HOST, PRIMARY_PORT))
-        except socket.error:
-            try:
-                healthcheck.connect((HOST, PRIMARY_PORT))
-            except socket.error:
-                primaryStatus = False
-
-        if primaryStatus:
-            healthcheck.sendall(bytes("healthcheck", 'UTF-8'))
-            data = healthcheck.recv(2048)
-            if not data:
-                primaryStatus = False
         
-        threading.Timer(20, healthCheckService).start()
 
 if __name__ == '__main__':
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -504,10 +507,6 @@ if __name__ == '__main__':
 
     print("Secondary Server started")
     print("Waiting for requests..")
-
-    healthCheckService()
-
-    readMetaData()
 
     HeartbeatThread().start()
     msg = ''
