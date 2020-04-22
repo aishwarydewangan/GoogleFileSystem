@@ -53,7 +53,7 @@ class FileInfo:
         return self.lastChunkID
 
     def getChunkInfo(self, chunkID):
-        if chunkID not in self.chunkInfo.keys()
+        if chunkID not in self.chunkInfo.keys():
             return []
         return self.chunkInfo[chunkID]
 
