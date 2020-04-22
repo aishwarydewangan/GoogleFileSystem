@@ -147,7 +147,7 @@ class chunkserver():
 			client.close()
 			if to_recv[0]=="client":
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
-
+			client.close()
 			self.mutual_excl[recv[2]].pop(0)
 		print("data appended")
 
