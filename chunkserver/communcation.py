@@ -13,12 +13,17 @@ class chunkserver():
 	mutual_excl = {}
 	def __init__(self):
 		self.myport = int(sys.argv[1])
+		print("Registering chunk server")
 		try:
 			client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			client.bind(("127.0.0.1",self.myport))
 			client.connect((MASTER_IP, MASTER_PORT))
 		except:
 			try:
 				client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				client.bind(("127.0.0.1",self.myport))
 				client.connect((DUPLICATE_MASTER_IP, DUPLICATE_MASTER_PORT))
 			except:
 				sys.exit()
@@ -39,6 +44,7 @@ class chunkserver():
 		client.sendall("register".encode())
 		client.recv(60)
 		client.sendall(msgtosend.encode())
+		print("chunk server registered")
 		client.close()
 
 	def run(self):
