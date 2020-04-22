@@ -155,7 +155,7 @@ class ClientThread(threading.Thread):
             for cs in chunkInfo[chunk]:
                 ip = cs.getIP()
                 port = cs.getPort()
-                serverList += ip + ":" + port + ','
+                serverList += ip + ":" + str(port) + ','
             msg = msg + chunk + "=" + serverList[:-1] + ";"
 
         msg = msg[:-1]
@@ -297,7 +297,7 @@ class HeartbeatThread(threading.Thread):
 
             obj = fileObj.getFirstChunkServer(chunk)
 
-            msg += obj.getIP() + ":" + obj.getPort() + "=" + chunk + ","
+            msg += obj.getIP() + ":" + str(obj.getPort()) + "=" + chunk + ","
 
         msg = msg[:-1]
 
@@ -443,7 +443,7 @@ class InfoThread(threading.Thread):
         msg = ''
 
         for obj in chunk_server_info:
-            msg += obj.getIP() + ":" + obj.getPort() + ','
+            msg += obj.getIP() + ":" + str(obj.getPort()) + ','
 
         msg = msg[:-1]
 
