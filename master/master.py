@@ -147,7 +147,7 @@ class ClientThread(threading.Thread):
             for cs in chunkInfo[chunk]:
                 ip = cs.getIP()
                 port = cs.getPort()
-                serverList += ip + ":" + port
+                serverList += ip + ":" + port + ','
             msg = msg + chunk + "=" + serverList[:-1] + ";"
 
         msg = msg[:-1]
