@@ -45,11 +45,9 @@ class chunkserver():
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.bind(("127.0.0.1",self.myport))
-		sock.listen(5)
 		while True:
-			
+			sock.listen()
 			client, address = sock.accept()
-			client.settimeout(60)
 			threading.Thread(target = self.checkoperation,args = (client,address)).start()
 
 	def checkoperation(self,client,address):
