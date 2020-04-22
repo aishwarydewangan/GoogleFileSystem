@@ -408,7 +408,7 @@ if __name__ == '__main__':
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
 
-    print("Server started")
+    print("Primary Server started")
     print("Waiting for requests..")
     HeartbeatThread().start()
     msg = ''
