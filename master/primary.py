@@ -1,5 +1,6 @@
 import math
 import socket
+import operator
 import threading
 
 HOST = "127.0.0.1"
@@ -34,6 +35,7 @@ class FileInfo:
         self.updateLastChunkStatus()
 
     def updateChunkInfo(self, chunk, cs):
+        global chunkservers
         if chunk not in chunkInfo.keys():
             self.chunkInfo[chunk] = []
         self.chunkInfo[chunk].append(chunkservers[cs])
@@ -116,6 +118,9 @@ class ClientThread(threading.Thread):
         print("Client Connected: ", self.caddress)
 
     def run(self):
+
+        global chunkservers
+        global files
         
         msg = ''
 
@@ -130,12 +135,15 @@ class ClientThread(threading.Thread):
         if self.info[0]=='append':
             msg = self.appendFile(self.info[1], int(self.info[2]))
 
-        csocket.sendall(bytes(msg), 'UTF-8')
+        self.csocket.sendall(bytes(msg, 'UTF-8'))
 
-        print("Client " + caddress + " wanted to " + self.info[0] + " on file " + self.info[1])
-        print("Response sent to Client " + caddress + "-->" + msg)
+        print("Client " , self.caddress, " wanted to ", self.info[0], " on file " , self.info[1])
+        print("Response sent to Client " , self.caddress , "-->" , msg)
 
     def readFile(self, name):
+
+        global chunkservers
+        global files
 
         obj = files[name]
 
@@ -158,11 +166,14 @@ class ClientThread(threading.Thread):
 
     def writeFile(self, name, size):
 
+        global chunkservers
+        global files
+
         obj = FileInfo(name, size)
 
         files[name] = obj
 
-        cs_list = chunkservers.values()
+        cs_list = list(chunkservers.values())
 
         cs_list.sort(key=operator.attrgetter('load'))
 
@@ -172,9 +183,11 @@ class ClientThread(threading.Thread):
 
         msg = ''
 
+        print(len(cs_list))
+
         while i < obj.getTotalChunks():
 
-            if j==len(cs_list)-1:
+            if j==len(cs_list):
                 j = 0
 
             ip = cs_list[j].getIP()
@@ -193,6 +206,9 @@ class ClientThread(threading.Thread):
         return msg
 
     def appendFile(self, name, size):
+
+        global chunkservers
+        global files
 
         newSize = size
 
@@ -263,6 +279,9 @@ class HeartbeatThread(threading.Thread):
 
     def chunkServerDown(self, cs):
 
+        global chunkservers
+        global files
+
         # Find which chunks to copy
         chunks_to_copy = chunkservers[cs].getChunks()
 
@@ -303,6 +322,9 @@ class HeartbeatThread(threading.Thread):
         sender.close()
 
     def run(self):
+        global chunkservers
+        global files
+
         for cs in chunkservers.keys():
             if chunkservers[cs].getStatus():
                 ip = cs[0]
@@ -320,6 +342,7 @@ class HeartbeatThread(threading.Thread):
                 if not check:
                     heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
                     data = heartbeat.recv(1024)
+                    print(data.decode())
                     length = int(data.decode())
                     if length > 0:
                         heartbeat.sendall(bytes("ok", 'UTF-8'))
@@ -337,7 +360,7 @@ class HeartbeatThread(threading.Thread):
                 if check:
                     self.chunkServerDown(cs)
         print("HeartbeatThread Completed")
-        threading.Timer(60, self.run).start()
+        threading.Timer(20, self.run).start()
 
 class RegisterChunkServerThread(threading.Thread):
 
@@ -348,8 +371,12 @@ class RegisterChunkServerThread(threading.Thread):
         print("ChunkServer Connected: ", self.caddress)
 
     def run(self):
+        global chunkservers
+        global files
+
         self.csocket.sendall(bytes("ok", 'UTF-8'))
         data = self.csocket.recv(20000)
+
         if data:
             data = data.decode().split(',')
             ip = self.caddress[0]
@@ -373,11 +400,13 @@ class RegisterChunkServerThread(threading.Thread):
                 fileObj = files[fileName]
 
                 fileObj.updateChunkInfo(chunkName, self.caddress)
+        else:
+            ip = self.caddress[0]
+            port = self.caddress[1]
+            obj = ChunkServer(ip, port, True)
+            chunkservers[self.caddress] = obj
 
-
-            print("ChunkServer ", self.caddress, " registered...")
-
-        print("ChunkServer ", self.caddress, " disconnected...")
+        print("ChunkServer ", self.caddress, " registered...")
 
 class InfoThread(threading.Thread):
 
@@ -389,6 +418,9 @@ class InfoThread(threading.Thread):
         print("ChunkServer Connected: ", chunk_address)
 
     def run(self):
+
+        global chunkservers
+        global files
 
         fileName = getFileName(self.cname)
 
