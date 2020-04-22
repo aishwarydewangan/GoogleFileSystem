@@ -95,7 +95,7 @@ class chunkserver():
 	def heartbeat_reply(self,client):
 		print("reply to heartbeat msg")
 		if(self.dirty == False):
-			st = '0'
+			st = "0"
 			client.sendall(st.encode())
 		else:
 			chunks = os.listdir(self.path)
