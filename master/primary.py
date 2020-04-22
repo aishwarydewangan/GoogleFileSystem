@@ -447,7 +447,8 @@ class InfoThread(threading.Thread):
 
         msg = msg[:-1]
 
-        csocket.sendall(bytes(msg, 'UTF-8'))
+        self.csocket.sendall(bytes(msg, 'UTF-8'))
+        self.csocket.close()
 
         print("ChunkServer ", self.caddress, " disconnected...")
 
