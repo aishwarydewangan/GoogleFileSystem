@@ -18,7 +18,7 @@ class FileInfo:
 
     def __init__(self, name, totalSize):
         self.name = name
-        self.totalSize = totalSize
+        self.totalSize = int(totalSize)
         self.chunkInfo = {}
         self.hasLastChunk = False
         self.lastChunkID = None
@@ -119,14 +119,16 @@ class ClientThread(threading.Thread):
         
         msg = ''
 
+        print("Received: ", self.info)
+
         if self.info[0]=='read':
             msg = self.readFile(self.info[1])
 
         if self.info[0]=='write':
-            msg = self.writeFile(self.info[1], self.info[2])
+            msg = self.writeFile(self.info[1], int(self.info[2]))
 
         if self.info[0]=='append':
-            msg = self.appendFile(self.info[1], self.info[2])
+            msg = self.appendFile(self.info[1], int(self.info[2]))
 
         csocket.sendall(bytes(msg), 'UTF-8')
 
