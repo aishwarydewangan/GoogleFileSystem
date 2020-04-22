@@ -149,6 +149,7 @@ class chunkserver():
 		mutual = [recv,client_con]
 		(self.mutual_excl)[recv[2]].append(mutual)
 		while len((self.mutual_excl)[recv[2]])!=0:
+			print("size",len((self.mutual_excl)[recv[2]]))
 			conn =  (self.mutual_excl)[recv[2]][0]
 			to_recv,client = conn[0],conn[1]
 			chunk=self.path+"/"+to_recv[2]
@@ -159,10 +160,12 @@ class chunkserver():
 				data = client.recv(sizetoappend)
 				f1.write(data)
 			client.close()
+			self.mutual_excl[recv[2]].pop(0)
 			if to_recv[0]=="client":
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
 			client.close()
-			self.mutual_excl[recv[2]].pop(0)
+		del self.mutual_excl[recv[2]]
+			
 		print("data appended")
 
 	def sendtosecondary(self,data,sizetoappend,file):
