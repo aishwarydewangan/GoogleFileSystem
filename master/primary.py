@@ -430,15 +430,11 @@ class InfoThread(threading.Thread):
         cs_list = list(chunkservers.values())
 
         cs_list.sort(key=operator.attrgetter('load'))
-
-        if len(chunk_server_info)==0:
-            for i in range(0, min(len(cs_list), 2)):
-                chunk_server_info.append(cs_list[i])
-        else:
-            i = 0
-            while len(chunk_server_info) < 3 and i < len(cs_list):
-                chunk_server_info.append(cs_list[i])
-                i += 1
+        
+        i = 0
+        while len(chunk_server_info) < 3 and i < len(cs_list):
+            chunk_server_info.append(cs_list[i])
+            i += 1
 
         msg = ''
 
