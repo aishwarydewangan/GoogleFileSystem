@@ -300,7 +300,7 @@ class HeartbeatThread(threading.Thread):
 
     def run(self):
         for cs in chunkservers.keys():
-            if chunkservers[cs].isAlive():
+            if chunkservers[cs].getStatus():
                 ip = cs[0]
                 port = cs[1]
                 heartbeat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -315,23 +315,20 @@ class HeartbeatThread(threading.Thread):
                         check = True
                 if not check:
                     heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
-                    while True:
-                        data = heartbeat.recv(1024)
-                        length = int(data.decode())
-                        if length == 0:
-                            break
+                    data = heartbeat.recv(1024)
+                    length = int(data.decode())
+                    if length > 0:
                         heartbeat.sendall(bytes("ok", 'UTF-8'))
                         data = heartbeat.recv(length+100)
-                    chunkservers[cs].updateChunk(data.decode())
-                    for cl in data.decode().split(','):
-                        chunk_info = cl.split(':')
-                        chunkName = chunk_info[0]
-                        fileName = getFileName(chunkName)
+                        chunkservers[cs].updateChunk(data.decode())
+                        for cl in data.decode().split(','):
+                            chunk_info = cl.split(':')
+                            chunkName = chunk_info[0]
+                            fileName = getFileName(chunkName)
 
-                        fileObj = files[fileName]
+                            fileObj = files[fileName]
 
-                        fileObj.updateChunkInfo(chunkName, cs)
-
+                            fileObj.updateChunkInfo(chunkName, cs)
                 heartbeat.close()
                 if check:
                     self.chunkServerDown(cs)
@@ -398,7 +395,7 @@ class InfoThread(threading.Thread):
         msg = ''
 
         for cs in chunk_server_info:
-            msg += cs.getIP() + ":" + cs.getPort()
+            msg += cs.getIP() + ":" + cs.getPort() + ','
 
         msg = msg[:-1]
 
