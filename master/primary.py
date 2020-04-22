@@ -53,6 +53,8 @@ class FileInfo:
         return self.lastChunkID
 
     def getChunkInfo(self, chunkID):
+        if chunkID not in self.chunkInfo.keys()
+            return []
         return self.chunkInfo[chunkID]
 
     def getAllChunkInfo(self):
@@ -64,12 +66,12 @@ class FileInfo:
     def removeServerInfo(self, chunk, cs):
         i = 0
 
-        for obj in chunkInfo[chunk]:
+        for obj in self.chunkInfo[chunk]:
             if cs[0]==obj.getIP() and cs[1]==obj.getPort():
                 break
             i += 1
 
-        chunkInfo[chunk].pop(i)
+        self.chunkInfo[chunk].pop(i)
 
 class ChunkServer:
 
@@ -124,8 +126,6 @@ class ClientThread(threading.Thread):
         
         msg = ''
 
-        print("Received: ", self.info)
-
         if self.info[0]=='read':
             msg = self.readFile(self.info[1])
 
@@ -137,8 +137,7 @@ class ClientThread(threading.Thread):
 
         self.csocket.sendall(bytes(msg, 'UTF-8'))
 
-        print("Client " , self.caddress, " wanted to ", self.info[0], " on file " , self.info[1])
-        print("Response sent to Client " , self.caddress , "-->" , msg)
+        print("Response sent to Client " , self.caddress , ": " , msg)
 
     def readFile(self, name):
 
@@ -432,11 +431,14 @@ class InfoThread(threading.Thread):
 
         cs_list.sort(key=operator.attrgetter('load'))
 
-        i = 0
-
-        while len(chunk_server_info) < 3 and i < len(cs_list):
-            chunk_server_info.append(cs_list[i])
-            i += 1
+        if len(chunk_server_info)==0:
+            for i in range(0, min(len(cs_list), 2)):
+                chunk_server_info.append(cs_list[i])
+        else:
+            i = 0
+            while len(chunk_server_info) < 3 and i < len(cs_list):
+                chunk_server_info.append(cs_list[i])
+                i += 1
 
         msg = ''
 
