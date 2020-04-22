@@ -214,7 +214,7 @@ class ClientThread(threading.Thread):
 
         obj = files[name]
 
-        cs_list = chunkservers.values()
+        cs_list = list(chunkservers.values())
 
         cs_list.sort(key=operator.attrgetter('load'))
 
