@@ -492,6 +492,33 @@ class InfoThread(threading.Thread):
         self.csocket.close()
 
         print("ChunkServer ", self.caddress, " disconnected...")
+
+class UpdateThread(threading.Thread):
+
+    def __init__(self, address, sock):
+        threading.Thread.__init__(self)
+        self.csocket = sock
+        self.caddress
+
+    def run(self):
+        global chunkservers
+        global files
+
+        self.csocket.sendall(bytes("ok", 'UTF-8'))
+        cs = self.caddress
+
+        data = self.csocket.recv(20000)
+        chunkservers[cs].updateChunk(data.decode())
+        for cl in data.decode().split(','):
+            chunk_info = cl.split(':')
+            chunkName = chunk_info[0]
+            fileName = getFileName(chunkName)
+
+            fileObj = files[fileName]
+
+            fileObj.updateChunkInfo(chunkName, cs)
+
+        self.csocket.close()
         
 
 if __name__ == '__main__':
@@ -513,6 +540,8 @@ if __name__ == '__main__':
             RegisterChunkServerThread(address, sock).start()
         if msg == 'healthcheck':
             sock.sendall(bytes("ok", 'UTF-8'))
+        if msg == 'update':
+            UpdateThread(address, sock).start()
         words = msg.split(':')
         if words[0] == 'info':
             InfoThread(address, sock, words[1]).start()
