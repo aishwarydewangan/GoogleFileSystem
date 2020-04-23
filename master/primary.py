@@ -384,9 +384,10 @@ class RegisterChunkServerThread(threading.Thread):
         threading.Thread.__init__(self)
         self.csocket = chunk_socket
         self.caddress = chunk_address
-        print("ChunkServer Connected: ", self.caddress)
 
     def run(self):
+        print("RegisterChunkServerThread Started")
+
         global chunkservers
         global files
 
@@ -424,7 +425,7 @@ class RegisterChunkServerThread(threading.Thread):
 
         self.csocket.close()
 
-        print("ChunkServer ", self.caddress, " registered...")
+        print("RegisterChunkServerThread Completed")
 
 class InfoThread(threading.Thread):
 
@@ -433,9 +434,9 @@ class InfoThread(threading.Thread):
         self.csocket = chunk_socket
         self.caddress = chunk_address
         self.cname = chunk_name
-        print("ChunkServer Connected: ", chunk_address)
 
     def run(self):
+        print("InfoThread Started")
 
         global chunkservers
         global files
@@ -465,7 +466,7 @@ class InfoThread(threading.Thread):
         self.csocket.sendall(bytes(msg, 'UTF-8'))
         self.csocket.close()
 
-        print("ChunkServer ", self.caddress, " disconnected...")
+        print("InfoThread Completed")
 
 class UpdateThread(threading.Thread):
 
@@ -477,10 +478,10 @@ class UpdateThread(threading.Thread):
         self.cport = port
 
     def run(self):
+        print("UpdateThread Started")
+
         global chunkservers
         global files
-
-        print("UpdateThread Started")
 
         cs = (self.cip, int(self.cport))
 
@@ -502,6 +503,8 @@ class UpdateThread(threading.Thread):
             fileObj = files[fileName]
 
             fileObj.updateChunkInfo(chunkName, cs)
+
+        print("UpdateThread Completed")
 
 if __name__ == '__main__':
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
