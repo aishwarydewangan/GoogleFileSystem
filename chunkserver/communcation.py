@@ -13,7 +13,7 @@ class chunkserver():
 	mutual_excl = {}
 	def __init__(self):
 		self.myport = int(sys.argv[1])
-		print("Registering chunk server")
+		print("Registering chunk server...")
 		try:
 			client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -44,7 +44,7 @@ class chunkserver():
 		client.sendall("register".encode())
 		client.recv(60)
 		client.sendall(msgtosend.encode())
-		print("chunk server registered")
+		print("Chunk server registered")
 		client.close()
 
 	def run(self):
@@ -115,7 +115,7 @@ class chunkserver():
 		client.close()
 
 	def copyfromchunkserver(self,copylist):
-		print("Copying chunk from chunkserver")
+		print("Copying chunk from chunkserver...")
 		copylist = copylist.split(',')
 		for item in copylist:
 			item = item.split('=')
@@ -135,7 +135,7 @@ class chunkserver():
 		print("chunk Recieved")
 
 	def sendchunk(self,to_recv,client,address):
-		print("Sending chunk "+to_recv[2])
+		print("Sending chunk "+to_recv[2] + " ...")
 		chunk=self.path+"/"+to_recv[2]
 		with open(chunk, 'rb') as f:
 			data=f.read(MAX_CHUNK_SIZE)
@@ -144,12 +144,11 @@ class chunkserver():
 		client.close()
 
 	def appendchunk(self,recv,client_con):
-		print("Appending data")
+		print("Appending data to chunk "+ recv[2]+"...")
 		(self.mutual_excl)[recv[2]] = []
 		mutual = [recv,client_con]
 		(self.mutual_excl)[recv[2]].append(mutual)
 		while len((self.mutual_excl)[recv[2]])!=0:
-			print("size",len((self.mutual_excl)[recv[2]]))
 			conn =  (self.mutual_excl)[recv[2]][0]
 			to_recv,client = conn[0],conn[1]
 			chunk=self.path+"/"+to_recv[2]
@@ -164,10 +163,9 @@ class chunkserver():
 			if to_recv[0]=="client":
 				print("Data Appended to primary replica")
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
+				print("Data Appended to all replicas")
 			client.close()
-		del self.mutual_excl[recv[2]]
-		print("Data Appended")
-		
+		del self.mutual_excl[recv[2]]		
 
 	def sendtosecondary(self,data,sizetoappend,file):
 		print("Copying to secondary replicas")
@@ -184,10 +182,8 @@ class chunkserver():
 		getlist = s1.recv(MAX_CHUNK_SIZE).decode()
 		getlist = getlist.split(',')
 		s1.close()
-		print(getlist)
 		i = 0
 		for item in getlist:
-			print(item)
 			if len(item)>0:
 				item = item.split(":")
 				serverip, serverport = item[0],item[1]
@@ -200,9 +196,10 @@ class chunkserver():
 					st = s1.recv(1024)
 					s1.sendall(data)
 					s1.close()
+					print("Copied to secondary replica "+str(i))
 					if i>=2:
 						break
-		print("Copied to secondary replicas")
+					
 
 master = chunkserver()	
 master.run()

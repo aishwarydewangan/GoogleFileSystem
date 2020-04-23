@@ -79,7 +79,7 @@ def send_to_chunk_server(decision,chunkInfo,filename):
         else:
             filefrom = filename
         ip_port_arr = chunkInfo.split(",")
-        chunk = "./"+filefrom 
+        chunk = "./"+filefrom
         with open(chunk, 'rb') as f:
             for ip_port_size in ip_port_arr:
                 ip_port, write_file_size = ip_port_size.split("=")
@@ -94,7 +94,7 @@ def send_to_chunk_server(decision,chunkInfo,filename):
                 data=f.read(int(writeSize))
                 s.sendall(data)
                 s.close()
-                return
+        return
 
             
 if __name__=="__main__":
