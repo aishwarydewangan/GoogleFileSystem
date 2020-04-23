@@ -441,7 +441,7 @@ class InfoThread(threading.Thread):
         global chunkservers
         global files
 
-        for cl in self.data.decode().split(','):
+        for cl in self.data.split(','):
             chunk_info = cl.split(':')
             chunkName = chunk_info[0]
             fileName = getFileName(chunkName)
