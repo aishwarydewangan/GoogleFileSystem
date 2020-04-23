@@ -158,8 +158,6 @@ class ClientThread(threading.Thread):
 
         self.csocket.close()
 
-        print("Response sent to Client " , self.caddress , ": " , msg)
-
     def readFile(self, name):
 
         global chunkservers
@@ -295,7 +293,6 @@ class HeartbeatThread(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
-        print("HeartbeatThread Started")
 
     def chunkServerDown(self, cs):
 
@@ -347,7 +344,6 @@ class HeartbeatThread(threading.Thread):
 
         for cs in list(chunkservers):
             if chunkservers[cs].getStatus():
-                print("Checking: ", cs)
                 ip = cs[0]
                 port = cs[1]
                 heartbeat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -378,9 +374,9 @@ class HeartbeatThread(threading.Thread):
                             fileObj.updateChunkInfo(chunkName, cs)
                 heartbeat.close()
                 if check:
-                    print(cs, " is down, running server down op")
+                    print(cs, " chunkserver is down, copying chunks to other chunkserver")
                     self.chunkServerDown(cs)
-        print("HeartbeatThread Completed")
+        print("Heartbeat Round Completed")
         threading.Timer(20, self.run).start()
         writeMetaData()
 
