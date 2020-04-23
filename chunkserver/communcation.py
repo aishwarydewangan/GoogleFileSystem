@@ -160,11 +160,45 @@ class chunkserver():
 				f1.write(data)
 			client.close()
 			self.mutual_excl[recv[2]].pop(0)
+			client.close()
+			####################################
+			
+			try:
+				s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				sock.bind(("127.0.0.1",self.myport))
+				s1.connect((MASTER_IP, MASTER_PORT))
+			except:
+				try:
+					s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+					sock.bind(("127.0.0.1",self.myport))
+					s1.connect((DUPLICATE_MASTER_IP, DUPLICATE_MASTER_PORT))
+				except:      
+					sys.exit()
+
+			chunks = os.listdir(self.path)
+			msgtosend = ""
+			s1.sendall("update".encode())
+			
+			for file in chunks:
+				filename = self.path+"/"+file
+				file_stats = os.stat(filename)
+				currsize = file_stats.st_size
+				msgtosend+=file+":"+str(currsize)+","
+			if len(chunks)!=0:
+				msgtosend=msgtosend[:-1]
+
+			s1.recv(60)
+			s1.sendall(msgtosend.encode())
+			s1.close()
+
+			##################################################
 			if to_recv[0]=="client":
 				print("Data Appended to primary replica")
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
 				print("Data Appended to all replicas")
-			client.close()
+			
 		del self.mutual_excl[recv[2]]		
 
 	def sendtosecondary(self,data,sizetoappend,file):
