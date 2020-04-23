@@ -70,7 +70,7 @@ def send_to_chunk_server(decision,chunkInfo,filename):
             print("Reading "+filename_chunkid+".....")
             status = s.recv(2048)
             s.close()
-            return
+        return
 
     if(decision=="append") or (decision=="write"):
         if (decision == "append"):
@@ -99,11 +99,11 @@ def send_to_chunk_server(decision,chunkInfo,filename):
             
 if __name__=="__main__":
     print("Enter commands in the following format: ")
-    print("To upload a file: write <filename>")
-    print("To read a file: read <filename>")
-    print("To append some data in a file: append <tofile> <fromfile>")
+    print("\tTo upload a file: write <filename>")
+    print("\tTo read a file: read <filename>")
+    print("\tTo append some data in a file: append <tofile> <fromfile>")
     while True:
-        getCommand=input()
+        getCommand=input(">> ")
         a=len(getCommand.split())
 
         decision = getCommand.split(' ')[0]
