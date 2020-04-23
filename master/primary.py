@@ -335,6 +335,7 @@ class HeartbeatThread(threading.Thread):
         sender.connect((send_ip, send_port))
         sender.sendall(bytes(msg, 'UTF-8'))
         sender.close()
+        writeMetaData()
 
     def run(self):
         global chunkservers

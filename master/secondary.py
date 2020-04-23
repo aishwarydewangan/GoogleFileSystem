@@ -20,10 +20,10 @@ def getFileName(name):
     return name[0]
 
 def writeMetaData():
-    with open('chunkservers.meta', 'wb') as output:
+    with open('./chunkservers.meta', 'wb') as output:
         pickle.dump(chunkservers, output, pickle.HIGHEST_PROTOCOL)
 
-    with open('files.meta', 'wb') as output:
+    with open('./files.meta', 'wb') as output:
         pickle.dump(files, output, pickle.HIGHEST_PROTOCOL)
 
 def readMetaData():
@@ -337,6 +337,7 @@ class HeartbeatThread(threading.Thread):
         sender.connect((send_ip, send_port))
         sender.sendall(bytes(msg, 'UTF-8'))
         sender.close()
+        writeMetaData()
 
     def run(self):
         global chunkservers
