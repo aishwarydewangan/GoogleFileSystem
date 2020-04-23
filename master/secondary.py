@@ -498,7 +498,7 @@ class UpdateThread(threading.Thread):
     def __init__(self, address, sock):
         threading.Thread.__init__(self)
         self.csocket = sock
-        self.caddress
+        self.caddress = address
 
     def run(self):
         global chunkservers
