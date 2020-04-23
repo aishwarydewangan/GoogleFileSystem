@@ -470,6 +470,7 @@ class InfoThread(threading.Thread):
 class UpdateThread(threading.Thread):
 
     def __init__(self, address, sock, ip, port):
+        threading.Thread.__init__(self)
         self.caddress = address
         self.csocket = sock
         self.cip = ip
@@ -479,11 +480,19 @@ class UpdateThread(threading.Thread):
         global chunkservers
         global files
 
+        print("UpdateThread Started")
+
         cs = (self.cip, int(self.cport))
+
+        print("Send ok to ", caddress)
 
         self.csocket.sendall(bytes("ok", 'UTF-8'))
 
+        print("Sent ok to ", caddress)
+
         data = self.csocket.recv(2048)
+
+        print("Received: ", data.decode())
 
         for cl in data.decode().split(','):
             chunk_info = cl.split(':')
