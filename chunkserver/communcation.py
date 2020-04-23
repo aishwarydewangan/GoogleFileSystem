@@ -233,11 +233,13 @@ class chunkserver():
 		getlist = getlist.split(',')
 		s1.close()
 		i = 0
+		print(getlist)
 		for item in getlist:
 			if len(item)>0:
 				item = item.split(":")
 				serverip, serverport = item[0],item[1]
 				if int(serverport)!=self.myport:
+					print(item)
 					i=i+1
 					s1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 					tosend = "chunkserver:appendinfo:"+file+":"+str(sizetoappend)
