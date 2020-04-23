@@ -175,7 +175,7 @@ class chunkserver():
 
 			chunks = os.listdir(self.path)
 			msgtosend = ""
-			msg = "update:127.0.0.1:"+str(self.port)
+			msg = "update:127.0.0.1:"+str(self.myport)
 			s1.sendall(msg.encode())
 			print("update")
 
