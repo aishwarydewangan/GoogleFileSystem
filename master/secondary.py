@@ -203,8 +203,6 @@ class ClientThread(threading.Thread):
 
         msg = ''
 
-        print(len(cs_list))
-
         while i < obj.getTotalChunks():
 
             if j==len(cs_list):
