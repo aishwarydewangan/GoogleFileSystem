@@ -138,9 +138,9 @@ class ClientThread(threading.Thread):
         self.caddress = client_address
         self.csocket = client_socket
         self.info = info
-        print("Client Connected: ", self.caddress)
 
     def run(self):
+        print("Client Connected: ", self.caddress)
 
         global chunkservers
         global files
@@ -381,26 +381,12 @@ class HeartbeatThread(threading.Thread):
                             check = True
                     if not check:
                         heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
-                        data = heartbeat.recv(1024)
-                        length = int(data.decode())
-                        if length > 0:
-                            heartbeat.sendall(bytes("ok", 'UTF-8'))
-                            data = heartbeat.recv(length+100)
-                            chunkservers[cs].updateChunk(data.decode())
-                            for cl in data.decode().split(','):
-                                chunk_info = cl.split(':')
-                                chunkName = chunk_info[0]
-                                fileName = getFileName(chunkName)
-
-                                fileObj = files[fileName]
-
-                                fileObj.updateChunkInfo(chunkName, cs)
+                        data = heartbeat.recv(2048)
                     heartbeat.close()
                     if check:
                         print(cs, " chunkserver is down, copying chunks to other chunkserver")
                         self.chunkServerDown(cs)
             print("Heartbeat Round Completed")
-            writeMetaData()
 
         threading.Timer(20, self.run).start()
 
@@ -410,9 +396,10 @@ class RegisterChunkServerThread(threading.Thread):
         threading.Thread.__init__(self)
         self.csocket = chunk_socket
         self.caddress = chunk_address
-        print("ChunkServer Connected: ", self.caddress)
 
     def run(self):
+        print("RegisterChunkServerThread Started")
+
         global chunkservers
         global files
 
@@ -450,7 +437,7 @@ class RegisterChunkServerThread(threading.Thread):
 
         self.csocket.close()
 
-        print("ChunkServer ", self.caddress, " registered...")
+        print("RegisterChunkServerThread Completed")
 
 class InfoThread(threading.Thread):
 
@@ -459,9 +446,9 @@ class InfoThread(threading.Thread):
         self.csocket = chunk_socket
         self.caddress = chunk_address
         self.cname = chunk_name
-        print("ChunkServer Connected: ", chunk_address)
 
     def run(self):
+        print("InfoThread Started")
 
         global chunkservers
         global files
@@ -478,7 +465,8 @@ class InfoThread(threading.Thread):
         
         i = 0
         while len(chunk_server_info) < 3 and i < len(cs_list):
-            chunk_server_info.append(cs_list[i])
+            if cs_list[i] not in chunk_server_info:
+                chunk_server_info.append(cs_list[i])
             i += 1
 
         msg = ''
@@ -491,25 +479,30 @@ class InfoThread(threading.Thread):
         self.csocket.sendall(bytes(msg, 'UTF-8'))
         self.csocket.close()
 
-        print("ChunkServer ", self.caddress, " disconnected...")
+        print("InfoThread Completed")
 
 class UpdateThread(threading.Thread):
 
-    def __init__(self, address, sock):
+    def __init__(self, address, sock, ip, port):
         threading.Thread.__init__(self)
-        self.csocket = sock
         self.caddress = address
+        self.csocket = sock
+        self.cip = ip
+        self.cport = port
 
     def run(self):
-        print('UpdateThread Started')
+        print("UpdateThread Started")
+
         global chunkservers
         global files
 
+        cs = (self.cip, int(self.cport))
+
         self.csocket.sendall(bytes("ok", 'UTF-8'))
 
-        data = self.csocket.recv(20000)
-        chunkservers[self.caddress].updateChunk(data.decode())
-        print("\tReceived: ", data.decode())
+        data = self.csocket.recv(2048)
+
+        chunkservers[cs].updateChunk(data.decode())
         for cl in data.decode().split(','):
             chunk_info = cl.split(':')
             chunkName = chunk_info[0]
@@ -517,9 +510,10 @@ class UpdateThread(threading.Thread):
 
             fileObj = files[fileName]
 
-            fileObj.updateChunkInfo(chunkName, self.caddress)
+            fileObj.updateChunkInfo(chunkName, cs)
 
         print("UpdateThread Completed")
+        writeMetaData()
         
 
 if __name__ == '__main__':
@@ -541,10 +535,10 @@ if __name__ == '__main__':
             RegisterChunkServerThread(address, sock).start()
         if msg == 'healthcheck':
             sock.sendall(bytes("ok", 'UTF-8'))
-        if msg == 'update':
-            UpdateThread(address, sock).start()
         words = msg.split(':')
         if words[0] == 'info':
             InfoThread(address, sock, words[1]).start()
         elif words[0] == 'client':
             ClientThread(address, sock, words[1:]).start()
+        elif words[0] == 'update':
+            UpdateThread(address, sock, words[1], words[2]).start()

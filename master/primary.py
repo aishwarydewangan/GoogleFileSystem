@@ -117,9 +117,6 @@ class ChunkServer:
     def getPort(self):
         return self.port
 
-    def getLoad(self):
-        return self.load
-
     def getChunks(self):
         return self.chunkInfo.keys()
 
@@ -139,9 +136,9 @@ class ClientThread(threading.Thread):
         self.caddress = client_address
         self.csocket = client_socket
         self.info = info
-        print("Client Connected: ", self.caddress)
 
     def run(self):
+        print("Client Connected: ", self.caddress)
 
         global chunkservers
         global files
@@ -360,26 +357,12 @@ class HeartbeatThread(threading.Thread):
                 if not check:
                     heartbeat.sendall(bytes("master:heartbeat", 'UTF-8'))
                     data = heartbeat.recv(2048)
-                    # length = int(data.decode())
-                    # if length > 0:
-                    #     heartbeat.sendall(bytes("ok", 'UTF-8'))
-                    #     data = heartbeat.recv(length+100)
-                    #     chunkservers[cs].updateChunk(data.decode())
-                    #     for cl in data.decode().split(','):
-                    #         chunk_info = cl.split(':')
-                    #         chunkName = chunk_info[0]
-                    #         fileName = getFileName(chunkName)
-
-                    #         fileObj = files[fileName]
-
-                    #         fileObj.updateChunkInfo(chunkName, cs)
                 heartbeat.close()
                 if check:
                     print(cs, " chunkserver is down, copying chunks to other chunkserver")
                     self.chunkServerDown(cs)
         print("Heartbeat Round Completed")
         threading.Timer(20, self.run).start()
-        writeMetaData()
 
 class RegisterChunkServerThread(threading.Thread):
 
@@ -453,9 +436,6 @@ class InfoThread(threading.Thread):
         cs_list = list(chunkservers.values())
 
         cs_list.sort(key=operator.attrgetter('load'))
-
-        for hh in cs_list:
-            print("[Info]" , hh.getIP() , ":" , hh.getPort(), "=Load:", hh.getLoad())
         
         i = 0
         while len(chunk_server_info) < 3 and i < len(cs_list):
@@ -469,8 +449,6 @@ class InfoThread(threading.Thread):
             msg += obj.getIP() + ":" + str(obj.getPort()) + ','
 
         msg = msg[:-1]
-
-        print("[Info] Sending: ", msg)
 
         self.csocket.sendall(bytes(msg, 'UTF-8'))
         self.csocket.close()
@@ -494,15 +472,9 @@ class UpdateThread(threading.Thread):
 
         cs = (self.cip, int(self.cport))
 
-        print("[Update] Send ok to ", self.caddress)
-
         self.csocket.sendall(bytes("ok", 'UTF-8'))
 
-        print("Sent ok to ", self.caddress)
-
         data = self.csocket.recv(2048)
-
-        print("Received: ", data.decode())
 
         chunkservers[cs].updateChunk(data.decode())
         for cl in data.decode().split(','):
@@ -514,14 +486,8 @@ class UpdateThread(threading.Thread):
 
             fileObj.updateChunkInfo(chunkName, cs)
 
-        cs_list = list(chunkservers.values())
-
-        cs_list.sort(key=operator.attrgetter('load'))
-
-        for hh in cs_list:
-            print("[Update]" , hh.getIP() , ":" , hh.getPort(), "=Load:", hh.getLoad())
-
         print("UpdateThread Completed")
+        writeMetaData()
 
 if __name__ == '__main__':
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -530,7 +496,7 @@ if __name__ == '__main__':
 
     print("Primary Server started")
     print("Waiting for requests..")
-    # HeartbeatThread().start()
+    HeartbeatThread().start()
     msg = ''
     while True:
         server.listen()
