@@ -30,10 +30,10 @@ def readMetaData():
     global chunkservers
     global files
 
-    with open('chunkservers.meta', 'rb') as ip:
+    with open('./chunkservers.meta', 'rb') as ip:
         chunkservers = pickle.load(ip)
 
-    with open('files.meta', 'rb') as ip:
+    with open('./files.meta', 'rb') as ip:
         files = pickle.load(ip)
 
 class FileInfo:

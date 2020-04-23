@@ -18,20 +18,20 @@ def getFileName(name):
     return name[0]
 
 def writeMetaData():
-    with open('chunkservers.meta', 'wb') as output:
+    with open('./chunkservers.meta', 'wb') as output:
         pickle.dump(chunkservers, output, pickle.HIGHEST_PROTOCOL)
 
-    with open('files.meta', 'wb') as output:
+    with open('./files.meta', 'wb') as output:
         pickle.dump(files, output, pickle.HIGHEST_PROTOCOL)
 
 def readMetaData():
     global chunkservers
     global files
 
-    with open('chunkservers.meta', 'rb') as ip:
+    with open('./chunkservers.meta', 'rb') as ip:
         chunkservers = pickle.load(ip)
 
-    with open('files.meta', 'rb') as ip:
+    with open('./files.meta', 'rb') as ip:
         files = pickle.load(ip)
 
 class FileInfo:
