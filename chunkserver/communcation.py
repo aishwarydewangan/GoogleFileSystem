@@ -162,7 +162,7 @@ class chunkserver():
 			self.mutual_excl[recv[2]].pop(0)
 			client.close()
 			####################################
-			
+			print("updating info")
 			try:
 				s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -189,9 +189,11 @@ class chunkserver():
 			if len(chunks)!=0:
 				msgtosend=msgtosend[:-1]
 
-			s1.recv(60)
+			x=s1.recv(60)
+			print(x)
 			s1.sendall(msgtosend.encode())
 			s1.close()
+			print("info updated")
 
 			##################################################
 			if to_recv[0]=="client":
