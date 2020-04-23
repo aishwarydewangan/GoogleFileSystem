@@ -60,8 +60,7 @@ def send_to_chunk_server(decision,chunkInfo,filename):
         for files in info_arr:
             filename_chunkid = files.split("=")[0]
             ip_ports = files.split("=")[1]
-            ind = random.randint(0,len(ip_ports)-1)
-            ip_port = ip_ports.split(",")[ind]
+            ip_port = ip_ports.split(",")[0]
             ip = ip_port.split(":")[0]
             port = int(ip_port.split(":")[1])
             chunk_server_msg = "client:" + "read:" + filename_chunkid
