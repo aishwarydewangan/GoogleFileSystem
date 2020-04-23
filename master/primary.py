@@ -475,14 +475,16 @@ class UpdateThread(threading.Thread):
         self.caddress = address
 
     def run(self):
+        print('UpdateThread Started')
         global chunkservers
         global files
 
         self.csocket.sendall(bytes("ok", 'UTF-8'))
-        cs = self.caddress
+        print("[Update] ACK Sent to ", self.caddress)
 
         data = self.csocket.recv(20000)
-        chunkservers[cs].updateChunk(data.decode())
+        chunkservers[self.caddress].updateChunk(data.decode())
+        print("[Update] Received: ", data.decode(), " from ", self.caddress)
         for cl in data.decode().split(','):
             chunk_info = cl.split(':')
             chunkName = chunk_info[0]
@@ -490,9 +492,9 @@ class UpdateThread(threading.Thread):
 
             fileObj = files[fileName]
 
-            fileObj.updateChunkInfo(chunkName, cs)
+            fileObj.updateChunkInfo(chunkName, self.caddress)
 
-        self.csocket.close()
+        print("UpdateThread Completed")
 
 
 if __name__ == '__main__':
