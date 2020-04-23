@@ -428,27 +428,17 @@ class RegisterChunkServerThread(threading.Thread):
 
 class InfoThread(threading.Thread):
 
-    def __init__(self, chunk_address, chunk_socket, chunk_name, words):
+    def __init__(self, chunk_address, chunk_socket, chunk_name):
         threading.Thread.__init__(self)
         self.csocket = chunk_socket
         self.caddress = chunk_address
         self.cname = chunk_name
-        self.data = words
         print("ChunkServer Connected: ", chunk_address)
 
     def run(self):
 
         global chunkservers
         global files
-
-        for cl in self.data.split(','):
-            chunk_info = cl.split(':')
-            chunkName = chunk_info[0]
-            fileName = getFileName(chunkName)
-
-            fileObj = files[fileName]
-
-            fileObj.updateChunkInfo(chunkName, self.caddress)
 
         fileName = getFileName(self.cname)
 
@@ -477,6 +467,32 @@ class InfoThread(threading.Thread):
 
         print("ChunkServer ", self.caddress, " disconnected...")
 
+class UpdateThread(threading.Thread):
+
+    def __init__(self, address, sock, ip, port):
+        self.caddress = address
+        self.csocket = sock
+        self.cip = ip
+        self.cport = port
+
+    def run(self):
+        global chunkservers
+        global files
+
+        cs = (self.cip, int(self.cport))
+
+        self.csocket.sendall(bytes("ok", 'UTF-8'))
+
+        data = self.csocket.recv(2048)
+
+        for cl in data.decode().split(','):
+            chunk_info = cl.split(':')
+            chunkName = chunk_info[0]
+            fileName = getFileName(chunkName)
+
+            fileObj = files[fileName]
+
+            fileObj.updateChunkInfo(chunkName, cs)
 
 if __name__ == '__main__':
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -496,10 +512,10 @@ if __name__ == '__main__':
             RegisterChunkServerThread(address, sock).start()
         if msg == 'healthcheck':
             sock.sendall(bytes("ok", 'UTF-8'))
-        if msg == 'update':
-            UpdateThread(address, sock).start()
         words = msg.split(':')
         if words[0] == 'info':
-            InfoThread(address, sock, words[1], words[2]).start()
+            InfoThread(address, sock, words[1]).start()
         elif words[0] == 'client':
             ClientThread(address, sock, words[1:]).start()
+        elif words[0] == 'update':
+            UpdateThread(address, sock, words[1], words[2]).start()
