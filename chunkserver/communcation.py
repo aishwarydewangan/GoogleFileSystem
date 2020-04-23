@@ -94,24 +94,25 @@ class chunkserver():
 	
 	def heartbeat_reply(self,client):
 		print("Replying to heartbeat msg")
-		if(self.dirty == False):
-			st = "0"
-			client.sendall(st.encode())
-		else:
-			chunks = os.listdir(self.path)
-			msgtosend = ""
-			for file in chunks:
-				filename = self.path+"/"+file
-				file_stats = os.stat(filename)
-				currsize = file_stats.st_size
-				msgtosend+=file+":"+str(currsize)+","
-			if len(chunks)!=0:
-				msgtosend=msgtosend[:-1]
-			nums = str(sys.getsizeof(msgtosend))
-			client.sendall(nums.encode())
-			client.recv(60)
-			client.sendall(msgtosend.encode())
-			self.dirty = False
+		client.sendall("ok".encode())
+		# if(self.dirty == False):
+		# 	st = "0"
+		# 	client.sendall(st.encode())
+		# else:
+		# 	chunks = os.listdir(self.path)
+		# 	msgtosend = ""
+		# 	for file in chunks:
+		# 		filename = self.path+"/"+file
+		# 		file_stats = os.stat(filename)
+		# 		currsize = file_stats.st_size
+		# 		msgtosend+=file+":"+str(currsize)+","
+		# 	if len(chunks)!=0:
+		# 		msgtosend=msgtosend[:-1]
+		# 	nums = str(sys.getsizeof(msgtosend))
+		# 	client.sendall(nums.encode())
+		# 	client.recv(60)
+		# 	client.sendall(msgtosend.encode())
+		# 	self.dirty = False
 		client.close()
 
 	def copyfromchunkserver(self,copylist):
@@ -214,17 +215,6 @@ class chunkserver():
 				s1.connect((DUPLICATE_MASTER_IP, DUPLICATE_MASTER_PORT))
 			except:      
 				sys.exit()
-
-		# chunks = os.listdir(self.path)
-		# msgtosend = ""
-		# print("update")
-		# for file in chunks:
-		# 	filename = self.path+"/"+file
-		# 	file_stats = os.stat(filename)
-		# 	currsize = file_stats.st_size
-		# 	msgtosend+=file+":"+str(currsize)+","
-		# if len(chunks)!=0:
-		# 	msgtosend=msgtosend[:-1]
 
 		s1.sendall(("info:"+file).encode())
 		print("info updated")
