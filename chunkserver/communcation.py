@@ -162,40 +162,38 @@ class chunkserver():
 			self.mutual_excl[recv[2]].pop(0)
 			client.close()
 			####################################
-			# print("updating info")
-			# try:
-			# 	s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			# 	s1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			# 	s1.bind(("127.0.0.1",self.myport))
-			# 	s1.connect((MASTER_IP, MASTER_PORT))
-			# except:
-			# 	try:
-			# 		s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			# 		s1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			# 		s1.bind(("127.0.0.1",self.myport))
-			# 		s1.connect((DUPLICATE_MASTER_IP, DUPLICATE_MASTER_PORT))
-			# 	except:      
-			# 		sys.exit()
+			print("updating info")
+			try:
+				s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s1.connect((MASTER_IP, MASTER_PORT))
+			except:
+				try:
+					s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					s1.connect((DUPLICATE_MASTER_IP, DUPLICATE_MASTER_PORT))
+				except:      
+					sys.exit()
 
-			# chunks = os.listdir(self.path)
-			# msgtosend = ""
-			# s1.sendall("update".encode())
-			# print("update")
+			chunks = os.listdir(self.path)
+			msgtosend = ""
+			msg = "update:127.0.0.1:"+str(self.port)
+			s1.sendall(msg.encode())
+			print("update")
 
-			# for file in chunks:
-			# 	filename = self.path+"/"+file
-			# 	file_stats = os.stat(filename)
-			# 	currsize = file_stats.st_size
-			# 	msgtosend+=file+":"+str(currsize)+","
-			# if len(chunks)!=0:
-			# 	msgtosend=msgtosend[:-1]
+			for file in chunks:
+				filename = self.path+"/"+file
+				file_stats = os.stat(filename)
+				currsize = file_stats.st_size
+				msgtosend+=file+":"+str(currsize)+","
+			if len(chunks)!=0:
+				msgtosend=msgtosend[:-1]
 
-			# x=s1.recv(60)
-			# print(x)
-			# print(msgtosend)
-			# s1.sendall(msgtosend.encode())
-			# s1.close()
-			# print("info updated")
+			x=s1.recv(60)
+			print(x)
+			print(msgtosend)
+
+			s1.sendall(msgtosend.encode())
+			s1.close()
+			print("info updated")
 
 			##################################################
 			if to_recv[0]=="client":
@@ -217,20 +215,20 @@ class chunkserver():
 			except:      
 				sys.exit()
 
-		chunks = os.listdir(self.path)
-		msgtosend = ""
-		print("update")
-		for file in chunks:
-			filename = self.path+"/"+file
-			file_stats = os.stat(filename)
-			currsize = file_stats.st_size
-			msgtosend+=file+":"+str(currsize)+","
-		if len(chunks)!=0:
-			msgtosend=msgtosend[:-1]
+		# chunks = os.listdir(self.path)
+		# msgtosend = ""
+		# print("update")
+		# for file in chunks:
+		# 	filename = self.path+"/"+file
+		# 	file_stats = os.stat(filename)
+		# 	currsize = file_stats.st_size
+		# 	msgtosend+=file+":"+str(currsize)+","
+		# if len(chunks)!=0:
+		# 	msgtosend=msgtosend[:-1]
 
-		s1.sendall(("info:"+file+":"+msgtosend).encode())
+		s1.sendall(("info:"+file).encode())
 		print("info updated")
-		
+
 		getlist = s1.recv(MAX_CHUNK_SIZE).decode()
 		getlist = getlist.split(',')
 		s1.close()
