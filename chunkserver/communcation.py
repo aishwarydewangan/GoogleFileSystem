@@ -165,14 +165,14 @@ class chunkserver():
 			print("updating info")
 			try:
 				s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-				sock.bind(("127.0.0.1",self.myport))
+				s1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				s1.bind(("127.0.0.1",self.myport))
 				s1.connect((MASTER_IP, MASTER_PORT))
 			except:
 				try:
 					s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-					sock.bind(("127.0.0.1",self.myport))
+					s1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+					s1.bind(("127.0.0.1",self.myport))
 					s1.connect((DUPLICATE_MASTER_IP, DUPLICATE_MASTER_PORT))
 				except:      
 					sys.exit()
@@ -181,6 +181,7 @@ class chunkserver():
 			msgtosend = ""
 			s1.sendall("update".encode())
 			print("update")
+
 			for file in chunks:
 				filename = self.path+"/"+file
 				file_stats = os.stat(filename)
