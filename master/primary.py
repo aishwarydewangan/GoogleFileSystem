@@ -484,11 +484,11 @@ class UpdateThread(threading.Thread):
 
         cs = (self.cip, int(self.cport))
 
-        print("Send ok to ", caddress)
+        print("Send ok to ", self.caddress)
 
         self.csocket.sendall(bytes("ok", 'UTF-8'))
 
-        print("Sent ok to ", caddress)
+        print("Sent ok to ", self.caddress)
 
         data = self.csocket.recv(2048)
 
