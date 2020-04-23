@@ -58,7 +58,7 @@ class chunkserver():
 
 	def checkoperation(self,client,address):
 		recv=client.recv(400).decode("utf-8")
-		print("msg recieved: ",recv)
+		print("Msg recieved: ",recv)
 		to_recv=recv.split(":")
 		if(to_recv[0]=="master"):
 			if(to_recv[1]=="heartbeat"):
@@ -93,7 +93,7 @@ class chunkserver():
 
 	
 	def heartbeat_reply(self,client):
-		print("reply to heartbeat msg")
+		print("Replying to heartbeat msg")
 		if(self.dirty == False):
 			st = "0"
 			client.sendall(st.encode())
@@ -115,7 +115,7 @@ class chunkserver():
 		client.close()
 
 	def copyfromchunkserver(self,copylist):
-		print("copy from chunkserver")
+		print("Copying chunk from chunkserver")
 		copylist = copylist.split(',')
 		for item in copylist:
 			item = item.split('=')
@@ -132,19 +132,19 @@ class chunkserver():
 				data = s1.recv(MAX_CHUNK_SIZE)
 				f1.write(data)
 			s1.close()
-			print("chunk recieved")
+		print("chunk Recieved")
 
 	def sendchunk(self,to_recv,client,address):
-		print("send chunk")
+		print("Sending chunk "+to_recv[2])
 		chunk=self.path+"/"+to_recv[2]
 		with open(chunk, 'rb') as f:
 			data=f.read(MAX_CHUNK_SIZE)
 			client.sendall(data)
-		print("chunk sent")
+		print("Chunk sent")
 		client.close()
 
 	def appendchunk(self,recv,client_con):
-		print("appending data")
+		print("Appending data")
 		(self.mutual_excl)[recv[2]] = []
 		mutual = [recv,client_con]
 		(self.mutual_excl)[recv[2]].append(mutual)
@@ -162,14 +162,15 @@ class chunkserver():
 			client.close()
 			self.mutual_excl[recv[2]].pop(0)
 			if to_recv[0]=="client":
+				print("Data Appended to primary replica")
 				self.sendtosecondary(data,sizetoappend,to_recv[2])
 			client.close()
 		del self.mutual_excl[recv[2]]
-			
-		print("data appended")
+		print("Data Appended")
+		
 
 	def sendtosecondary(self,data,sizetoappend,file):
-		print("copying to secondary replicas")
+		print("Copying to secondary replicas")
 		try:
 			s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s1.connect((MASTER_IP, MASTER_PORT))
@@ -201,7 +202,7 @@ class chunkserver():
 					s1.close()
 					if i>=2:
 						break
-		print("copied to secondary replicas")
+		print("Copied to secondary replicas")
 
 master = chunkserver()	
 master.run()
