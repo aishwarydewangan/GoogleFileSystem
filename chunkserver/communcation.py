@@ -180,7 +180,7 @@ class chunkserver():
 			chunks = os.listdir(self.path)
 			msgtosend = ""
 			s1.sendall("update".encode())
-			
+			print("update")
 			for file in chunks:
 				filename = self.path+"/"+file
 				file_stats = os.stat(filename)
@@ -191,6 +191,7 @@ class chunkserver():
 
 			x=s1.recv(60)
 			print(x)
+			print(msgtosend)
 			s1.sendall(msgtosend.encode())
 			s1.close()
 			print("info updated")
